@@ -1,0 +1,27 @@
+{
+  "name": "shca_server",
+  "version": "1.0.0",
+  "description": "Smart Home Backend Application",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "18.12.0"
+  },
+  "author": "MahmoodMakhloof",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "firebase-admin": "^11.0.1",
+    "firebase-auth": "^0.1.2",
+    "mongoose": "^5.13.15",
+    "socket.io": "^2.4.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.20"
+  }
+}
