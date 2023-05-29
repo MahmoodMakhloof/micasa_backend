@@ -1,6 +1,7 @@
-const Boards = require("../models/boardModel");
+
 const Models = require("../models/modelModel");
 const Interfaces = require("../models/interfaceModel");
+const Boards = require("../models/boardModel");
 
 const boardCtrl = {
   /// Board has its data like [token] and [model]
@@ -46,6 +47,15 @@ const boardCtrl = {
       const board = await Boards.findOne({ _id: req.params });
       if (!board) return res.status(400).json({ msg: "No Board Exists" });
       res.status(200).json({ data: { board }, msg: "SUCCESS" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  getUserBoards: async (req, res) => {
+    try {
+      const userBoards = await Boards.find({ admin: res.user });
+      res.status(200).json({ data: { userBoards }, msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
