@@ -10,10 +10,15 @@ const socketServer = require("./socketServer");
 
 //* Import Routers
 const userRouter = require("./CLIENT/routers/userRouter");
+const scenceRouter = require("./CLIENT/routers/scenceRouter");
+const scheduleRouter = require("./CLIENT/routers/scheduleRouter");
+
 const modelRouter = require("./HARDWARE/routers/modelRouter");
 const boardRouter = require("./HARDWARE/routers/boardRouter");
 const interfaceRouter = require("./HARDWARE/routers/interfaceRouter");
 const groupRouter = require("./HARDWARE/routers/groupRouter");
+
+
 
 // parse application/x-www-form-urlencoded
 // { extended: true } : support nested object
@@ -37,6 +42,8 @@ app.use("/api/model", modelRouter);
 app.use("/api/board", boardRouter);
 app.use("/api/interface", interfaceRouter);
 app.use("/api/group", groupRouter);
+app.use("/api/scence", scenceRouter);
+app.use("/api/schedule", scheduleRouter);
 
 const port = process.env.PORT || 5000;
 const URL = process.env.MONGO_URI;
