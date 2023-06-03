@@ -18,6 +18,7 @@ const BoardSchma = mongoose.Schema(
         admin: {
             type: mongoose.SchemaTypes.ObjectId, ref: 'user',
         },
+        isActive:{ type:Boolean,default:false}
         
 
     },

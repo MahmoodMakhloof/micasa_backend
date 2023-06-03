@@ -1,26 +1,27 @@
 const Groups = require("../models/groupModel");
+const Interfaces = require("../models/interfaceModel");
 
 const groupCtrl = {
-  addInterfaceToGroup: async (req, res) => {
+  addInterfacesToGroup: async (req, res) => {
     try {
-      const { interfaceId, groupId } = req.body;
-      const user = req.user;
-      const group = await Groups.findById(groupId);
-      if (group.admin != user) {
-        return res.status(403).json("Permission Denied");
+      const { interfacesIds, groupId } = req.body;
+
+      const group = await Groups.findOne({ _id: groupId, admin: req.user }).populate("admin");
+      if (!group) {
+        return res.status(403).json("This group not existed!");
       }
 
-      if (group.interfaces.some((i) => i._id === interfaceId)) {
-        return res.status(208).json("Already Added");
-      }
-      const newGroup = await Groups.updateOne(
-        { _id: groupId },
-        {
-          $push: { interfaces: interfaceId },
+      interfacesIds.forEach((ii) => {
+        if (!group.interfaces.find((item) => item._id == ii)) {
+          group.interfaces.push(ii);
         }
-      );
+      });
 
-      return res.status(200).json({ msg: "SUCCESS", data: { newGroup } });
+      const newGroup = await group.save();
+
+      return res
+        .status(200)
+        .json({ msg: "SUCCESS", data: { group: newGroup } });
     } catch (err) {
       return res.status(500).json({ msg: err.toString() });
     }
@@ -99,11 +100,12 @@ const groupCtrl = {
   },
   createGroup: async (req, res) => {
     try {
-      const { name } = req.body;
+      const { name ,interfaces} = req.body;
       const admin = req.user;
 
       const newGroup = new Groups({
         name,
+        interfaces,
         admin,
       });
 
@@ -122,14 +124,14 @@ const groupCtrl = {
 
   getGroupData: async (req, res) => {
     try {
-      const group = await Groups.findOne({ _id: req.params });
+      const group = await Groups.find({ _id: req.params });
       const user = req.user;
       if (group.admin != user) {
         return res.status(403).json("Permission Denied");
       }
 
       if (!group) return res.status(400).json({ msg: "No Groups Exists" });
-      res.status(200).json({ data: { group }, msg: "SUCCESS" });
+      return res.status(200).json({ data: { group }, msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -139,9 +141,32 @@ const groupCtrl = {
     try {
       const groups = await Groups.find({
         $or: [{ admin: req.user }, { users: req.user }],
-      });
+      }).populate("users admin", "avatar fullname");
 
-      res.status(200).json({ data: { groups }, msg: "SUCCESS" });
+      return res.status(200).json({ data: { groups }, msg: "SUCCESS" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+ 
+  getGroupInterfaces: async (req, res) => {
+    try {
+      const group = await Groups.findOne({
+        admin: req.user,
+        _id: req.params.id,
+      });
+      console.log(group)
+      if (!group) return res.status(400).json("Group Not Existed");
+      const interfaces = await Interfaces.find({
+        _id: group.interfaces,
+      }).populate({
+        path: "board",
+        populate: {
+          path: "model",
+        },
+      });
+      res.status(200).json({ data: { interfaces }, msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -164,7 +189,7 @@ const groupCtrl = {
         }
       );
 
-      res.json({ msg: "SUCCESS", data: { newGroup } });
+      return res.json({ msg: "SUCCESS", data: { newGroup } });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -181,7 +206,7 @@ const groupCtrl = {
       }
       await Groups.deleteOne({ _id: req.params });
 
-      res.json({ msg: "SUCCESS" });
+      return res.json({ msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

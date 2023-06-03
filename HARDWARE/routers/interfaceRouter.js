@@ -3,6 +3,8 @@ const auth = require('../../middleware/auth');
 const interfaceCtrl = require('../controllers/interfaceController');
 
 
-router.get('/get', auth, interfaceCtrl.getUserInterfaces)
+router.get('/getUserInterfaces', auth, interfaceCtrl.getUserInterfaces)
+router.get('/getOutputInterfaces', auth, interfaceCtrl.getOutputInterfaces)
+
 
 module.exports = router;

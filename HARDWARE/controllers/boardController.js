@@ -1,4 +1,3 @@
-
 const Models = require("../models/modelModel");
 const Interfaces = require("../models/interfaceModel");
 const Boards = require("../models/boardModel");
@@ -21,14 +20,33 @@ const boardCtrl = {
         token: token,
       });
       await newBoard.save();
-
+      var doCtr = 0;
+      var aoCtr = 0;
+      var diCtr = 0;
+      var aiCtr = 0;
       for (let index = 0; index < model.map.length; index++) {
+        var interfaceNumber = 0;
+
         const i = model.map[index];
+
+        if (i == "DO") {
+          doCtr++;
+          interfaceNumber = doCtr;
+        } else if (i == "AO") {
+          aoCtr++;
+          interfaceNumber = aoCtr;
+        } else if (i == "DI") {
+          diCtr++;
+          interfaceNumber = diCtr;
+        } else if (i == "AI") {
+          aiCtr++;
+          interfaceNumber = aiCtr;
+        }
         const newInterface = new Interfaces({
           board: newBoard._id,
           type: i,
           value: null,
-          name: i + index,
+          name: i + interfaceNumber,
         });
 
         await newInterface.save();
@@ -51,11 +69,49 @@ const boardCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+  connectBoard: async (req, res) => {
+    try {
+      const { token } = req.body;
+      const board = await Boards.findOne({ token: token });
+      if (!board) return res.status(400).json({ msg: "No Board Exists" });
+      if (board.admin != null) {
+        if (board.admin._id.toString == req.user._id.toString) {
+          return res
+            .status(400)
+            .json({ msg: "You are connected with this board already!" });
+        } else {
+          return res.status(400).json({ msg: "This board has admin already!" });
+        }
+      }
+      board.admin = req.user;
+      await board.save();
+      var newBoard =await  Boards.findOne({ token: token }).populate("model");
+      res.status(200).json({ data: { board: newBoard }, msg: "SUCCESS" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  disconnectBoard: async (req, res) => {
+    try {
+      const { token } = req.body;
+
+      const board = await Boards.findOne({ token: token });
+      if (!board) return res.status(400).json({ msg: "No Board Exists" });
+      if (board.admin != req.user) {
+        return res.status(400).json({ msg: "You are not admin!" });
+      }
+      board.admin = null;
+      var newBoard = await board.save();
+      res.status(200).json({ data: { board: newBoard }, msg: "SUCCESS" });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
 
   getUserBoards: async (req, res) => {
     try {
-      const userBoards = await Boards.find({ admin: res.user });
-      res.status(200).json({ data: { userBoards }, msg: "SUCCESS" });
+      const userBoards = await Boards.find({ admin: req.user }).populate("model");
+      res.status(200).json({ data: { boards:userBoards }, msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

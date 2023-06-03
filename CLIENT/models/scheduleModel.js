@@ -6,7 +6,7 @@ const scheduleSchema = mongoose.Schema(
       type: String,
       required: true,
     },
-    enabeld: {
+    enabled: {
       type: Boolean,
       required: true,
       default: true,
@@ -24,7 +24,7 @@ const scheduleSchema = mongoose.Schema(
       type: mongoose.SchemaTypes.ObjectId,
       ref: "user",
     },
-    events: { type: Map },
+    events: { type: Array },
   },
   {
     timestamps: true,

@@ -22,5 +22,4 @@ const interfaceSchma = mongoose.Schema(
         timestamps: true,
     }
 );
-
 module.exports = mongoose.model("interface", interfaceSchma);
