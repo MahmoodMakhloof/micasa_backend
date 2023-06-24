@@ -11,13 +11,8 @@ const scheduleSchema = mongoose.Schema(
       required: true,
       default: true,
     },
-    repeated: {
-      type: Boolean,
-    },
-    days: {
-      type: Array,
-    },
-    time: {
+    
+    cron: {
       type: String,
     },
     user: {

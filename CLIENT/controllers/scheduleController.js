@@ -3,15 +3,13 @@ const Schedules = require("../models/scheduleModel");
 const scheduleCtrl = {
   createNewSchedule: async (req, res) => {
     try {
-      var { name, repeated, days, events, time } = req.body;
+      var { name, cron, events,  } = req.body;
 
       const newSchedule = new Schedules({
         user: req.user,
         name,
         events,
-        time,
-        repeated,
-        days
+        cron
       });
 
       await newSchedule.save();
@@ -39,16 +37,14 @@ const scheduleCtrl = {
 
   updateSchedule: async (req, res) => {
     try {
-        var { name,enabled, repeated, days, events, time } = req.body;
+        var { name,enabled, cron, events,  } = req.body;
 
       const schedule = await Schedules.findOneAndUpdate(
         { _id: req.body.scheduleId },
         {
           name,
           enabled,
-          time,
-          repeated,
-          days,
+          cron,
           events,
         }
       );

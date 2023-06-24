@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const INTERFACE_TYPES = ["DO", "DI", "AO", "AI"]
+const INTERFACE_DEVICES = ["lamp", "fan", "ac", "curtain","lampshade","door","temperature","smoke","lock"]
 const interfaceSchma = mongoose.Schema(
     {
         name: {
@@ -13,9 +14,10 @@ const interfaceSchma = mongoose.Schema(
             required: true,
         },
         type: { type: String, enum: INTERFACE_TYPES },
+
         value: { type: Number, default: 0 },
 
-
+        device:{type: String,enum: INTERFACE_DEVICES}
 
     },
     {
