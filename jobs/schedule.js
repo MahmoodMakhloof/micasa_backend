@@ -1,3 +1,3 @@
-const { Worker, isMainThread, workerData } = require('worker_threads');
+const { Worker, isMainThread, workerData } = require("worker_threads");
 
-console.log("worker data",workerData.job)
+console.log("Events ==> ", workerData);

@@ -1,18 +1,23 @@
 const Schedules = require("../models/scheduleModel");
+const {addJob,updateJob,removeJob} = require("./../../scheduling")
 
 const scheduleCtrl = {
   createNewSchedule: async (req, res) => {
     try {
-      var { name, cron, events,  } = req.body;
+      var { name, cron, events,datetime  } = req.body;
 
       const newSchedule = new Schedules({
         user: req.user,
         name,
         events,
-        cron
+        cron,
+        datetime,
       });
 
       await newSchedule.save();
+
+      //* pass to schedule
+       addJob(newSchedule);
 
       return res.status(200).json({
         data: {
@@ -37,7 +42,7 @@ const scheduleCtrl = {
 
   updateSchedule: async (req, res) => {
     try {
-        var { name,enabled, cron, events,  } = req.body;
+        var { name,enabled, cron, events,datetime  } = req.body;
 
       const schedule = await Schedules.findOneAndUpdate(
         { _id: req.body.scheduleId },
@@ -45,9 +50,13 @@ const scheduleCtrl = {
           name,
           enabled,
           cron,
+          datetime,
           events,
         }
       );
+        //* update job
+      updateJob(schedule);
+
 
       res.json({ msg: "SUCCESS", data: { schedule } });
     } catch (err) {
@@ -60,7 +69,10 @@ const scheduleCtrl = {
       if (!schedule)
         return res.status(400).json({ msg: "Schedule Not Existed" });
       await Schedules.deleteOne({ _id: req.body.scheduleId });
+      //* remove job
+      removeJob(schedule);
       res.status(200).json({ msg: "SUCCESS" });
+      
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

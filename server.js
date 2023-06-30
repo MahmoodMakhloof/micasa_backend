@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const express = require("express");
-const Bree = require("bree");
-const path = require("path");
+
 
 require("dotenv").config();
 
@@ -19,9 +18,8 @@ const modelRouter = require("./HARDWARE/routers/modelRouter");
 const boardRouter = require("./HARDWARE/routers/boardRouter");
 const interfaceRouter = require("./HARDWARE/routers/interfaceRouter");
 const groupRouter = require("./HARDWARE/routers/groupRouter");
+const { fetchJobs } = require("./scheduling");
 
-//* Fetch Models
-const Schedules = require("./CLIENT/models/scheduleModel");
 
 // parse application/x-www-form-urlencoded
 // { extended: true } : support nested object
@@ -68,8 +66,7 @@ io.use(function (socket, next) {
   socketServer(socket);
 });
 
-var jobs = [];
-var bree;
+
 
 (async () => {
   //* MongoDB Connection
@@ -85,51 +82,10 @@ var bree;
     });
 
   console.log("DB IS CONNECTED ..");
-
-  //* Fetch Jobs
-  var schedules = await Schedules.find({ enabled: true }).exec();
-  jobs = schedules.map((s) => {
-    return {
-      name: s._id.toString(),
-      cron: s.cron,
-      path: path.resolve("jobs/schedule.js"),
-      worker: {
-        workerData: {
-          job: s,
-        },
-      },
-    };
-  });
-
-  //* Pass Jobs to Bree
-  bree = new Bree({
-    jobs: ["hello", ...jobs],
-  });
-
-  bree.start();
+    fetchJobs()
+  
 })();
 
-const scheduleEventEmitter = Schedules.watch();
-scheduleEventEmitter.on("change", async (change) => {
-  if (change.operationType == "insert") {
-    var s = change.fullDocument;
-    if (s.enabled) {
-      await bree.add({
-        name: s._id.toString(),
-        cron: s.cron,
-        path: path.resolve("jobs/schedule.js"),
-        worker: {
-          workerData: {
-            job: s,
-          },
-        },
-      });
-    }
-  } else if (change.operationType == "delete") {
-    bree.remove(change.documentKey._id);
-  } else if (change.operationType == "update") {
-    // TODO: //
-  }
-});
+
 
 module.exports = server; //Exporting for test

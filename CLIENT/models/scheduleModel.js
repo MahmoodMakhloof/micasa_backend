@@ -15,6 +15,9 @@ const scheduleSchema = mongoose.Schema(
     cron: {
       type: String,
     },
+    datetime: {
+      type: String,
+    },
     user: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: "user",
