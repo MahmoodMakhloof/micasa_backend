@@ -1,10 +1,11 @@
+const { await } = require("signale/types");
 const Schedules = require("../models/scheduleModel");
-const {addJob,updateJob,removeJob} = require("./../../scheduling")
+const { addJob, updateJob, removeJob } = require("./../../scheduling");
 
 const scheduleCtrl = {
   createNewSchedule: async (req, res) => {
     try {
-      var { name, cron, events,datetime  } = req.body;
+      var { name, cron, events, datetime } = req.body;
 
       const newSchedule = new Schedules({
         user: req.user,
@@ -17,7 +18,7 @@ const scheduleCtrl = {
       await newSchedule.save();
 
       //* pass to schedule
-       addJob(newSchedule);
+      addJob(newSchedule);
 
       return res.status(200).json({
         data: {
@@ -42,10 +43,10 @@ const scheduleCtrl = {
 
   updateSchedule: async (req, res) => {
     try {
-        var { name,enabled, cron, events,datetime  } = req.body;
+      var { scheduleId, name, enabled, cron, events, datetime } = req.body;
 
       const schedule = await Schedules.findOneAndUpdate(
-        { _id: req.body.scheduleId },
+        { _id: scheduleId },
         {
           name,
           enabled,
@@ -54,9 +55,11 @@ const scheduleCtrl = {
           events,
         }
       );
-        //* update job
-      updateJob(schedule);
 
+      const newSchedule =await Schedules.findOne({ _id: scheduleId });
+
+      //* update job
+      updateJob(newSchedule, schedule.enabled);
 
       res.json({ msg: "SUCCESS", data: { schedule } });
     } catch (err) {
@@ -69,10 +72,11 @@ const scheduleCtrl = {
       if (!schedule)
         return res.status(400).json({ msg: "Schedule Not Existed" });
       await Schedules.deleteOne({ _id: req.body.scheduleId });
-      //* remove job
-      removeJob(schedule);
-      res.status(200).json({ msg: "SUCCESS" });
       
+      //* remove job if it was enabled
+      removeJob(schedule, schedule.enabled);
+
+      res.status(200).json({ msg: "SUCCESS" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -81,7 +85,7 @@ const scheduleCtrl = {
   getUserSchedules: async (req, res) => {
     try {
       const schedules = await Schedules.find({
-        user: req.user
+        user: req.user,
       });
 
       res.status(200).json({ data: { schedules }, msg: "SUCCESS" });

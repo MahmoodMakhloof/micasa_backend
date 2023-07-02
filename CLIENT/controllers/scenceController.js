@@ -2,12 +2,11 @@ const Scences = require("../models/scenceModel");
 const scenceCtrl = {
   createNewScence: async (req, res) => {
     try {
-      var { name, description, events } = req.body;
+      var { name,  events } = req.body;
 
       const newScence = new Scences({
         user: req.user,
         name,
-        description,
         events,
       });
 
@@ -36,13 +35,12 @@ const scenceCtrl = {
 
   updateScence: async (req, res) => {
     try {
-      const { name, description, events } = req.body;
+      const { name , events } = req.body;
 
       const scence = await Scences.findOneAndUpdate(
         { _id: req.body.scenceId },
         {
           name,
-          description,
           events,
         }
       );

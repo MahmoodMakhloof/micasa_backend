@@ -1,4 +1,5 @@
 const Groups = require("../models/groupModel");
+const GroupImages = require("../models/groupImageModel");
 const Interfaces = require("../models/interfaceModel");
 
 const groupCtrl = {
@@ -6,7 +7,10 @@ const groupCtrl = {
     try {
       const { interfacesIds, groupId } = req.body;
 
-      const group = await Groups.findOne({ _id: groupId, admin: req.user }).populate("admin");
+      const group = await Groups.findOne({
+        _id: groupId,
+        admin: req.user,
+      }).populate("users admin image", "avatar fullname name url");
       if (!group) {
         return res.status(403).json("This group not existed!");
       }
@@ -18,6 +22,8 @@ const groupCtrl = {
       });
 
       const newGroup = await group.save();
+
+      
 
       return res
         .status(200)
@@ -100,12 +106,14 @@ const groupCtrl = {
   },
   createGroup: async (req, res) => {
     try {
-      const { name ,interfaces} = req.body;
+      const { name, image } = req.body;
       const admin = req.user;
+
+      const populatedImage = await GroupImages.findById(image)
 
       const newGroup = new Groups({
         name,
-        interfaces,
+        image:populatedImage,
         admin,
       });
 
@@ -141,7 +149,7 @@ const groupCtrl = {
     try {
       const groups = await Groups.find({
         $or: [{ admin: req.user }, { users: req.user }],
-      }).populate("users admin", "avatar fullname");
+      }).populate("users admin image", "avatar fullname name url");
 
       return res.status(200).json({ data: { groups }, msg: "SUCCESS" });
     } catch (err) {
@@ -149,14 +157,13 @@ const groupCtrl = {
     }
   },
 
- 
   getGroupInterfaces: async (req, res) => {
     try {
       const group = await Groups.findOne({
         admin: req.user,
         _id: req.params.id,
       });
-      console.log(group)
+      console.log(group);
       if (!group) return res.status(400).json("Group Not Existed");
       const interfaces = await Interfaces.find({
         _id: group.interfaces,
@@ -174,22 +181,23 @@ const groupCtrl = {
 
   updateGroup: async (req, res) => {
     try {
-      const { name } = req.body;
+      const { groupId, name, image } = req.body;
       const user = req.user;
-      const group = await Groups.findOne({ _id: req.params });
+      const group = await Groups.findOne({ _id: groupId, admin: req.user });
       if (!group) return res.status(400).json({ msg: "No Groups Exists" });
 
-      if (group.admin != user) {
+      if (group.admin._id.toString() != user._id.toString()) {
         return res.status(403).json("Permission Denied");
       }
       const newGroup = await Groups.findOneAndUpdate(
-        { _id: req.params },
+        { _id: groupId },
         {
           name,
+          image,
         }
-      );
+      ).populate("users admin image", "avatar fullname name url");
 
-      return res.json({ msg: "SUCCESS", data: { newGroup } });
+      return res.json({ msg: "SUCCESS", data: { group: newGroup } });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -211,6 +219,32 @@ const groupCtrl = {
       return res.status(500).json({ msg: err.message });
     }
   },
+
+  addPic: async (req, res) => {
+    try {
+      const { name, url } = req.body;
+      const image = new GroupImages({
+        name,
+        url,
+      });
+
+      image.save();
+
+      return res.json({ msg: "SUCCESS", data: { image} });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+
+  getPics: async (req, res) => {
+    try {
+      const images = await GroupImages.find();
+      return res.json({ msg: "SUCCESS", data: { images } });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
 };
 
 module.exports = groupCtrl;
+

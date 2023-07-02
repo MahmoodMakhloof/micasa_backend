@@ -11,11 +11,15 @@ router.get('/:id/interfaces', auth, groupCtrl.getGroupInterfaces)
 router.patch('/addUser', auth, groupCtrl.addUser)
 router.patch('/fireUser', auth, groupCtrl.fireUser)
 
-router.get('/update/:groupId', auth, groupCtrl.updateGroup)
+router.patch('/update', auth, groupCtrl.updateGroup)
 router.delete('/delete', auth, groupCtrl.deleteGroup)
 
 router.patch('/add', auth, groupCtrl.addInterfacesToGroup)
 router.patch('/remove', auth, groupCtrl.removeInterfaceFromGroup)
+
+//* Pics
+router.post('/pics/create', groupCtrl.addPic)
+router.get('/pics', groupCtrl.getPics)
 
 
 module.exports = router;

@@ -26,6 +26,7 @@ const scheduleSchema = mongoose.Schema(
   },
   {
     timestamps: true,
+    
   }
 );
 

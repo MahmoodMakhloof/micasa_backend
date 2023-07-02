@@ -3,6 +3,7 @@ const path = require("path");
 
 //* Fetch Models
 const Schedules = require("./CLIENT/models/scheduleModel");
+const { await } = require("signale/types");
 
 var jobs = [];
 var bree;
@@ -114,12 +115,19 @@ async function addJob(s) {
   }
 }
 
-function removeJob(s) {
-  bree.remove(s._id);
+async function removeJob(s, wasEnabled) {
+  try {
+    if (wasEnabled) {
+      await bree.remove(s._id.toString());
+    }
+  } catch (e) {
+    console.log(e.toString());
+  }
 }
 
-function updateJob(s) {
-  removeJob(s);
+function updateJob(s, wasEnabled) {
+  removeJob(s, wasEnabled);
+
   if (s.enabled) {
     addJob(s);
   }
